@@ -29,7 +29,7 @@ provider "nango" {
 
 # Build the provider
 ```bash
-go build -o nango-terraform-provider
+go build -o terraform-provider-nango
 ```
 
 # Create a local development directory
@@ -39,7 +39,7 @@ mkdir -p ~/.terraform.d/plugins/registry.terraform.io/[username]/nango/1.0.0/[OS
 
 # Copy the provider to the development directory
 ```bash
-cp nango-terraform-provider ~/.terraform.d/plugins/registry.terraform.io/[username]/nango/1.0.0/[OS_ARCH]/nango-terraform-provider_v1.0.0
+cp terraform-provider-nango ~/.terraform.d/plugins/registry.terraform.io/[username]/nango/1.0.0/[OS_ARCH]/terraform-provider-nango_v1.0.0
 ```
 Replace `[OS_ARCH]` with your system's OS and architecture (e.g., `linux_amd64`, `darwin_amd64`).
 Replace `[username]` with your active username.
@@ -160,7 +160,7 @@ output "github_integration_id" {
 2. Enter the repository directory
 3. Build the provider using the Go `build` command:
 ```bash
-go build -o nango-terraform-provider
+go build -o terraform-provider-nango
 ```
 
 ### Testing The Provider

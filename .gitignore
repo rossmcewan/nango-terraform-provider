@@ -4,7 +4,7 @@
 *.dll
 *.so
 *.dylib
-nango-terraform-provider
+terraform-provider-nango
 
 # Test binary, built with `go test -c`
 *.test
