@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/yourusername/terraform-provider-nango/internal/resources"
+	"github.com/rossmcewan/nango-terraform-provider/internal/resources"
 )
 
 func Provider() *schema.Provider {
@@ -16,24 +16,20 @@ func Provider() *schema.Provider {
 				Required:    true,
 				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("NANGO_API_KEY", nil),
-				Description: "The API key for Nango",
+				Description: "The API key for Nango API operations.",
 			},
 			"base_url": {
 				Type:        schema.TypeString,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("NANGO_BASE_URL", "https://api.nango.dev"),
-				Description: "The base URL for the Nango API",
+				Description: "The base URL of the Nango API.",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"nango_integration": resources.ResourceIntegration(),
-			"nango_connection":  resources.ResourceConnection(),
-			// Add more resources as needed
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"nango_integration": resources.DataSourceIntegration(),
-			"nango_connection":  resources.DataSourceConnection(),
-			// Add more data sources as needed
 		},
 		ConfigureContextFunc: providerConfigure,
 	}
@@ -43,11 +39,8 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	apiKey := d.Get("api_key").(string)
 	baseURL := d.Get("base_url").(string)
 
-	// Initialize and return a client for the Nango API
-	client := &resources.NangoClient{
-		APIKey:  apiKey,
-		BaseURL: baseURL,
-	}
+	// Initialize the client
+	client := resources.NewNangoClient(apiKey, baseURL)
 
-	return client, nil
+	return client, diag.Diagnostics{}
 }

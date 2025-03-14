@@ -4,42 +4,69 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"time"
 )
 
-// NangoClient handles API communication with Nango
+// NangoClient is the client for interacting with the Nango API
 type NangoClient struct {
 	APIKey  string
 	BaseURL string
 	Client  *http.Client
 }
 
-// NewClient creates a new Nango API client
-func NewClient(apiKey, baseURL string) *NangoClient {
+// NewNangoClient creates a new Nango API client
+func NewNangoClient(apiKey, baseURL string) *NangoClient {
+	// Create an HTTP client with reasonable timeouts
+	client := &http.Client{
+		Timeout: time.Second * 30,
+	}
+
 	return &NangoClient{
 		APIKey:  apiKey,
 		BaseURL: baseURL,
-		Client:  &http.Client{},
+		Client:  client, // Initialize the HTTP client
 	}
 }
 
-// MakeRequest makes an HTTP request to the Nango API
+// MakeRequest makes a request to the Nango API
 func (c *NangoClient) MakeRequest(method, path string, body interface{}) (*http.Response, error) {
-	var buf bytes.Buffer
-	if body != nil {
-		if err := json.NewEncoder(&buf).Encode(body); err != nil {
-			return nil, err
+	// Ensure the client is initialized
+	if c.Client == nil {
+		c.Client = &http.Client{
+			Timeout: time.Second * 30,
 		}
 	}
 
+	// Construct the full URL
 	url := fmt.Sprintf("%s%s", c.BaseURL, path)
-	req, err := http.NewRequest(method, url, &buf)
-	if err != nil {
-		return nil, err
+
+	// Marshal the body to JSON if it's not nil
+	var reqBody io.Reader
+	if body != nil {
+		jsonBody, err := json.Marshal(body)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling request body: %w", err)
+		}
+		reqBody = bytes.NewBuffer(jsonBody)
 	}
 
+	// Create the request
+	req, err := http.NewRequest(method, url, reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("error creating request: %w", err)
+	}
+
+	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.APIKey))
 
-	return c.Client.Do(req)
+	// Make the request
+	resp, err := c.Client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %w", err)
+	}
+
+	return resp, nil
 }

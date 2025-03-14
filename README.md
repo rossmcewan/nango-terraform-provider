@@ -1,6 +1,6 @@
 # Nango Terraform Provider
 
-This Terraform provider allows you to manage your Nango resources as Infrastructure as Code (IaC). With this provider, you can create, update, and delete Nango integrations and connections programmatically through Terraform.
+This Terraform provider allows you to manage your Nango resources as Infrastructure as Code (IaC). With this provider, you can create, update, and delete Nango integrations programmatically through Terraform.
 
 ## Requirements
 
@@ -11,11 +11,11 @@ This Terraform provider allows you to manage your Nango resources as Infrastruct
 ## Installation
 
 ### Using Terraform Registry (Once Published)
-
+```terraform
 terraform {
   required_providers {
     nango = {
-      source  = "yourusername/nango"
+      source  = "[username]/nango"
       version = "~> 1.0.0"
     }
   }
@@ -24,40 +24,49 @@ terraform {
 provider "nango" {
   api_key = var.nango_api_key
 }
-
+```
 ### Local Development Installation
 
 # Build the provider
-go build -o terraform-provider-nango
+```bash
+go build -o nango-terraform-provider
+```
 
 # Create a local development directory
-mkdir -p ~/.terraform.d/plugins/registry.terraform.io/yourusername/nango/1.0.0/[OS_ARCH]
+```bash
+mkdir -p ~/.terraform.d/plugins/registry.terraform.io/[username]/nango/1.0.0/[OS_ARCH]
+```
 
 # Copy the provider to the development directory
-cp terraform-provider-nango ~/.terraform.d/plugins/registry.terraform.io/yourusername/nango/1.0.0/[OS_ARCH]/
-
+```bash
+cp nango-terraform-provider ~/.terraform.d/plugins/registry.terraform.io/[username]/nango/1.0.0/[OS_ARCH]/nango-terraform-provider_v1.0.0
+```
 Replace `[OS_ARCH]` with your system's OS and architecture (e.g., `linux_amd64`, `darwin_amd64`).
+Replace `[username]` with your active username.
 
 ## Authentication
 
 The provider requires a Nango API key for authentication. You can provide this in several ways:
 
 1. Set the `api_key` parameter in the provider configuration:
-
+```terraform
 provider "nango" {
   api_key = "your-api-key"
 }
+```
 
 2. Set the `NANGO_API_KEY` environment variable:
-
+```bash
 export NANGO_API_KEY="your-api-key"
+```
 
 ## Provider Configuration
-
+```terraform  
 provider "nango" {
   api_key  = var.nango_api_key                # Required: Your Nango API key
   base_url = "https://api.nango.dev"          # Optional: Defaults to https://api.nango.dev
 }
+```
 
 ## Resources
 
@@ -66,7 +75,7 @@ provider "nango" {
 Manages a Nango integration.
 
 #### Example Usage
-
+```terraform
 resource "nango_integration" "github" {
   name                = "github"
   provider_config_key = "github"
@@ -74,7 +83,7 @@ resource "nango_integration" "github" {
   oauth_client_secret = var.github_client_secret
   oauth_scopes        = ["repo", "user"]
 }
-
+```
 #### Argument Reference
 
 * `name` - (Required) The name of the integration.
@@ -87,29 +96,6 @@ resource "nango_integration" "github" {
 
 * `id` - The ID of the integration.
 
-### `nango_connection`
-
-Manages a Nango connection.
-
-#### Example Usage
-
-resource "nango_connection" "github_connection" {
-  connection_id    = "my-github-connection"
-  integration_name = nango_integration.github.name
-  environment      = "production"
-}
-
-#### Argument Reference
-
-* `connection_id` - (Required) The unique identifier for the connection.
-* `integration_name` - (Required) The name of the integration this connection belongs to.
-* `environment` - (Optional) The environment for this connection (e.g., production, development). Defaults to "production".
-* `credentials` - (Optional) Credentials for the connection (for non-OAuth connections).
-
-#### Attribute Reference
-
-* `id` - The ID of the connection.
-
 ## Data Sources
 
 ### `nango_integration`
@@ -117,36 +103,24 @@ resource "nango_connection" "github_connection" {
 Retrieves information about a Nango integration.
 
 #### Example Usage
-
+```terraform
 data "nango_integration" "github" {
   name = "github"
 }
+```
 
+```terraform    
 output "github_integration_id" {
   value = data.nango_integration.github.id
 }
-
-### `nango_connection`
-
-Retrieves information about a Nango connection.
-
-#### Example Usage
-
-data "nango_connection" "github_connection" {
-  connection_id    = "my-github-connection"
-  integration_name = "github"
-}
-
-output "github_connection_details" {
-  value = data.nango_connection.github_connection
-}
+```
 
 ## Complete Example
-
+```terraform
 terraform {
   required_providers {
     nango = {
-      source  = "yourusername/nango"
+      source  = "[username]/nango"
       version = "~> 1.0.0"
     }
   }
@@ -155,8 +129,9 @@ terraform {
 provider "nango" {
   api_key = var.nango_api_key
 }
-
+```
 # Create a GitHub integration
+```terraform
 resource "nango_integration" "github" {
   name                = "github"
   provider_config_key = "github"
@@ -164,23 +139,14 @@ resource "nango_integration" "github" {
   oauth_client_secret = var.github_client_secret
   oauth_scopes        = ["repo", "user"]
 }
-
-# Create a GitHub connection
-resource "nango_connection" "github_connection" {
-  connection_id    = "my-github-connection"
-  integration_name = nango_integration.github.name
-  environment      = "production"
-}
+```
 
 # Output the integration and connection IDs
+```terraform
 output "github_integration_id" {
   value = nango_integration.github.id
 }
-
-output "github_connection_id" {
-  value = nango_connection.github_connection.id
-}
-
+```
 ## Development
 
 ### Requirements
@@ -193,22 +159,25 @@ output "github_connection_id" {
 1. Clone the repository
 2. Enter the repository directory
 3. Build the provider using the Go `build` command:
-
-go build -o terraform-provider-nango
+```bash
+go build -o nango-terraform-provider
+```
 
 ### Testing The Provider
 
 Set the required environment variables:
-
+```bash
 export NANGO_API_KEY="your-api-key"
+```
 
 Run the tests:
-
+```bash 
 # Run unit tests
 go test ./...
 
 # Run acceptance tests (creates real resources)
 TF_ACC=1 go test ./... -v
+```
 
 ## Contributing
 

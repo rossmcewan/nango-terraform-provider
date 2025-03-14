@@ -1,4 +1,4 @@
-module github.com/yourusername/terraform-provider-nango
+module github.com/rossmcewan/nango-terraform-provider
 
 go 1.24.0
 
