@@ -120,15 +120,20 @@ func resourceIntegrationCreate(ctx context.Context, d *schema.ResourceData, m in
 func resourceIntegrationRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	client := m.(*NangoClient)
 
-	// Get the ID (unique_key in Nango API)
-	id := d.Id()
+	// Get the provider_config_key
+	providerConfigKey := d.Get("provider_config_key").(string)
 
 	// Make API request to get integration
-	resp, err := client.MakeRequest("GET", fmt.Sprintf("/integrations/%s?include=credentials", id), nil)
+	resp, err := client.MakeRequest("GET", fmt.Sprintf("/config/%s", providerConfigKey), nil)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	defer resp.Body.Close()
+
+	// Read and log the response body
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	bodyString := string(bodyBytes)
+	fmt.Printf("Response from /config/%s (%d): %s\n", providerConfigKey, resp.StatusCode, bodyString)
 
 	if resp.StatusCode == http.StatusNotFound {
 		// Integration was deleted outside of Terraform
@@ -137,45 +142,42 @@ func resourceIntegrationRead(ctx context.Context, d *schema.ResourceData, m inte
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return diag.Errorf("Error reading integration: %s - %s", resp.Status, string(bodyBytes))
+		return diag.Errorf("Error reading integration: %s - %s", resp.Status, bodyString)
 	}
 
 	// Parse the response
 	var result struct {
-		Data struct {
-			UniqueKey   string `json:"unique_key"`
-			DisplayName string `json:"display_name"`
-			Provider    string `json:"provider"`
-			Credentials struct {
-				ClientID     string `json:"client_id"`
-				ClientSecret string `json:"client_secret"`
-				Scopes       string `json:"scopes"`
-			} `json:"credentials"`
-		} `json:"data"`
+		Config struct {
+			UniqueKey         string `json:"unique_key"`
+			Provider          string `json:"provider"`
+			ProviderConfigKey string `json:"provider_config_key"`
+			OAuthClientID     string `json:"oauth_client_id"`
+			OAuthScopes       string `json:"oauth_scopes"`
+		} `json:"config"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return diag.FromErr(err)
+	if err := json.Unmarshal(bodyBytes, &result); err != nil {
+		return diag.Errorf("Error parsing response: %v - Response body: %s", err, bodyString)
 	}
 
 	// Set the resource data from the response
-	if err := d.Set("name", result.Data.Provider); err != nil {
+	if err := d.Set("name", result.Config.Provider); err != nil {
 		return diag.FromErr(err)
 	}
 
-	// The provider_config_key is not directly returned in the response
-	// We can infer it from the unique_key or keep the existing value
-
-	if err := d.Set("oauth_client_id", result.Data.Credentials.ClientID); err != nil {
+	if err := d.Set("provider_config_key", result.Config.ProviderConfigKey); err != nil {
 		return diag.FromErr(err)
 	}
 
-	// Don't set oauth_client_secret as it might be masked in the response
+	if err := d.Set("oauth_client_id", result.Config.OAuthClientID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Don't set oauth_client_secret as it's likely not returned by the API for security reasons
 
 	// Set scopes if present
-	if result.Data.Credentials.Scopes != "" {
-		scopes := strings.Split(result.Data.Credentials.Scopes, ",")
+	if result.Config.OAuthScopes != "" {
+		scopes := strings.Split(result.Config.OAuthScopes, ",")
 		if err := d.Set("oauth_scopes", scopes); err != nil {
 			return diag.FromErr(err)
 		}
