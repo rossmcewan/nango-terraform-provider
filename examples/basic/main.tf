@@ -12,11 +12,16 @@ provider "nango" {
 }
 
 resource "nango_integration" "github" {
-  name                = "github"
-  provider_config_key = "github"
-  oauth_client_id     = var.github_client_id
-  oauth_client_secret = var.github_client_secret
-  oauth_scopes        = ["repo", "user"]
+  unique_key   = "github-nango-community"
+  provider_name = "github"
+  display_name = "GitHub"
+  
+  credentials {
+    type          = "OAUTH2"
+    client_id     = var.github_client_id
+    client_secret = var.github_client_secret
+    scopes        = "repo,user"
+  }
 }
 
 output "github_integration_id" {

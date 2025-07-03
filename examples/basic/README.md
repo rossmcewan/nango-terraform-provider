@@ -1,6 +1,6 @@
 # Basic Nango Integration Example
 
-This example demonstrates how to use the Nango Terraform provider to create a GitHub integration.
+This example demonstrates how to use the Nango Terraform provider to create a GitHub integration using the official Nango API.
 
 ## Usage
 
@@ -12,8 +12,25 @@ This example demonstrates how to use the Nango Terraform provider to create a Gi
 
 4. To destroy the created resources when you're done, run `terraform destroy`.
 
+## Configuration
+
+The example creates a GitHub integration with the following configuration:
+
+- **unique_key**: A unique identifier for the integration (`github-nango-community`)
+- **provider_name**: The provider name (`github`)
+- **display_name**: The display name shown in the Nango dashboard (`GitHub`)
+- **credentials**: OAuth2 credentials including client ID, client secret, and scopes
+
 ## Requirements
 
 - Terraform >= 0.13.x
 - A Nango account with API access
 - GitHub OAuth application credentials
+
+## API Endpoints Used
+
+This provider uses the following Nango API endpoints:
+- `POST /integrations` - Create integration
+- `GET /integrations/{unique_key}` - Read integration
+- `PATCH /integrations/{unique_key}` - Update integration
+- `DELETE /integrations/{unique_key}` - Delete integration

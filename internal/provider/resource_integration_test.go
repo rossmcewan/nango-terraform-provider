@@ -16,8 +16,9 @@ func TestAccNangoIntegration_basic(t *testing.T) {
 				Config: testAccNangoIntegrationConfig(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckNangoIntegrationExists("nango_integration.test"),
-					resource.TestCheckResourceAttr("nango_integration.test", "name", "test-github"),
-					resource.TestCheckResourceAttr("nango_integration.test", "provider_config_key", "github"),
+					resource.TestCheckResourceAttr("nango_integration.test", "unique_key", "test-github-integration"),
+					resource.TestCheckResourceAttr("nango_integration.test", "provider_name", "github"),
+					resource.TestCheckResourceAttr("nango_integration.test", "display_name", "Test GitHub"),
 				),
 			},
 		},
@@ -27,11 +28,16 @@ func TestAccNangoIntegration_basic(t *testing.T) {
 func testAccNangoIntegrationConfig() string {
 	return `
 resource "nango_integration" "test" {
-  name                = "test-github"
-  provider_config_key = "github"
-  oauth_client_id     = "test-client-id"
-  oauth_client_secret = "test-client-secret"
-  oauth_scopes        = ["repo", "user"]
+  unique_key   = "test-github-integration"
+  provider_name = "github"
+  display_name = "Test GitHub"
+  
+  credentials {
+    type          = "OAUTH2"
+    client_id     = "test-client-id"
+    client_secret = "test-client-secret"
+    scopes        = "repo,user"
+  }
 }
 `
 }

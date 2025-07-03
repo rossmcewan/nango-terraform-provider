@@ -1,6 +1,6 @@
 # Nango Terraform Provider
 
-This Terraform provider allows you to manage your Nango resources as Infrastructure as Code (IaC). With this provider, you can create, update, and delete Nango integrations programmatically through Terraform.
+This Terraform provider allows you to manage your Nango resources as Infrastructure as Code (IaC). With this provider, you can create, update, and delete Nango integrations programmatically through Terraform using the official Nango API.
 
 ## Requirements
 
@@ -72,29 +72,37 @@ provider "nango" {
 
 ### `nango_integration`
 
-Manages a Nango integration.
+Manages a Nango integration using the official Nango API.
 
 #### Example Usage
 ```terraform
 resource "nango_integration" "github" {
-  name                = "github"
-  provider_config_key = "github"
-  oauth_client_id     = var.github_client_id
-  oauth_client_secret = var.github_client_secret
-  oauth_scopes        = ["repo", "user"]
+  unique_key   = "github-nango-community"
+  provider_name = "github"
+  display_name = "GitHub"
+  
+  credentials {
+    type          = "OAUTH2"
+    client_id     = var.github_client_id
+    client_secret = var.github_client_secret
+    scopes        = "repo,user"
+  }
 }
 ```
 #### Argument Reference
 
-* `name` - (Required) The name of the integration.
-* `provider_config_key` - (Required) The provider configuration key.
-* `oauth_client_id` - (Required) The OAuth client ID.
-* `oauth_client_secret` - (Required) The OAuth client secret.
-* `oauth_scopes` - (Optional) A list of OAuth scopes.
+* `unique_key` - (Required) A unique identifier for the integration.
+* `provider_name` - (Required) The provider name (e.g., 'slack', 'github').
+* `display_name` - (Required) The display name for the integration.
+* `credentials` - (Required) OAuth credentials configuration block:
+  * `type` - (Required) The type of credentials (e.g., 'OAUTH1', 'OAUTH2').
+  * `client_id` - (Required) The OAuth client ID.
+  * `client_secret` - (Required) The OAuth client secret.
+  * `scopes` - (Optional) The OAuth scopes as a comma-separated string.
 
 #### Attribute Reference
 
-* `id` - The ID of the integration.
+* `id` - The unique key of the integration.
 
 ## Data Sources
 
@@ -105,13 +113,13 @@ Retrieves information about a Nango integration.
 #### Example Usage
 ```terraform
 data "nango_integration" "github" {
-  name = "github"
+  unique_key = "github-nango-community"
 }
 ```
 
 ```terraform    
-output "github_integration_id" {
-  value = data.nango_integration.github.id
+output "github_integration_provider" {
+  value = data.nango_integration.github.provider_name
 }
 ```
 
@@ -133,20 +141,34 @@ provider "nango" {
 # Create a GitHub integration
 ```terraform
 resource "nango_integration" "github" {
-  name                = "github"
-  provider_config_key = "github"
-  oauth_client_id     = var.github_client_id
-  oauth_client_secret = var.github_client_secret
-  oauth_scopes        = ["repo", "user"]
+  unique_key   = "github-nango-community"
+  provider_name = "github"
+  display_name = "GitHub"
+  
+  credentials {
+    type          = "OAUTH2"
+    client_id     = var.github_client_id
+    client_secret = var.github_client_secret
+    scopes        = "repo,user"
+  }
 }
 ```
 
-# Output the integration and connection IDs
+# Output the integration ID
 ```terraform
 output "github_integration_id" {
   value = nango_integration.github.id
 }
 ```
+
+## API Endpoints
+
+This provider uses the following Nango API endpoints:
+- `POST /integrations` - Create integration
+- `GET /integrations/{unique_key}` - Read integration
+- `PATCH /integrations/{unique_key}` - Update integration
+- `DELETE /integrations/{unique_key}` - Delete integration
+
 ## Development
 
 ### Requirements
