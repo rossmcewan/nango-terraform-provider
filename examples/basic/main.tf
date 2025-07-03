@@ -8,7 +8,9 @@ terraform {
 }
 
 provider "nango" {
-  api_key = var.nango_api_key
+  api_key  = var.nango_api_key
+  base_url = var.nango_base_url  # Optional: defaults to https://api.nango.dev
+  # For self-hosted instances, use: base_url = "https://your-nango-instance.com"
 }
 
 resource "nango_integration" "github" {

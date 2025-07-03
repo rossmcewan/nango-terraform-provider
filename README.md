@@ -22,9 +22,9 @@ terraform {
 }
 
 provider "nango" {
-  api_key = var.nango_api_key
+  api_key  = var.nango_api_key
+  base_url = var.nango_base_url  # Optional: for custom endpoints
 }
-```
 ### Local Development Installation
 
 # Build the provider
@@ -66,6 +66,38 @@ provider "nango" {
   api_key  = var.nango_api_key                # Required: Your Nango API key
   base_url = "https://api.nango.dev"          # Optional: Defaults to https://api.nango.dev
 }
+```
+
+### Custom API URLs
+
+You can override the default Nango API URL for self-hosted instances or custom endpoints:
+
+```terraform
+provider "nango" {
+  api_key  = var.nango_api_key
+  base_url = "https://your-custom-nango-instance.com"
+}
+```
+
+Or set via environment variable:
+```bash
+export NANGO_BASE_URL="https://your-custom-nango-instance.com"
+```
+
+### Custom API URLs
+
+You can override the default Nango API URL for self-hosted instances or custom endpoints:
+
+```terraform
+provider "nango" {
+  api_key  = var.nango_api_key
+  base_url = "https://your-custom-nango-instance.com"
+}
+```
+
+Or set via environment variable:
+```bash
+export NANGO_BASE_URL="https://your-custom-nango-instance.com"
 ```
 
 ## Resources
@@ -135,7 +167,8 @@ terraform {
 }
 
 provider "nango" {
-  api_key = var.nango_api_key
+  api_key  = var.nango_api_key
+  base_url = var.nango_base_url  # Optional: for custom endpoints
 }
 ```
 # Create a GitHub integration

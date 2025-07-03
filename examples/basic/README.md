@@ -21,6 +21,22 @@ The example creates a GitHub integration with the following configuration:
 - **display_name**: The display name shown in the Nango dashboard (`GitHub`)
 - **credentials**: OAuth2 credentials including client ID, client secret, and scopes
 
+## API URL Configuration
+
+You can override the default Nango API URL for self-hosted instances or custom endpoints:
+
+```terraform
+provider "nango" {
+  api_key  = var.nango_api_key
+  base_url = "https://your-custom-nango-instance.com"  # Optional
+}
+```
+
+Or set via environment variable:
+```bash
+export NANGO_BASE_URL="https://your-custom-nango-instance.com"
+```
+
 ## Requirements
 
 - Terraform >= 0.13.x
